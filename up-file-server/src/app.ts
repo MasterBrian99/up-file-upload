@@ -1,10 +1,9 @@
-
 import * as express from "express";
+import morgan from 'morgan';
 const app = express.default();
-import { Request, Response } from "express";
+import { default as fileRouter } from "./controllers/file.controller";
 
-app.get('/', (_req: Request, res: Response) => {
-    res.send('Hello')
-})
+app.use(morgan('combined'))
 
+app.use('/file', fileRouter)
 export default app;
