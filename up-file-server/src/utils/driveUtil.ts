@@ -1,47 +1,46 @@
 import drive from "../configs/cloudConfig";
 import { Readable } from "stream";
-import mime from 'mime-types';
-import path from 'path';
 import { uploadResponseDto } from '../interface/drive-api.dto';
+import { findFileID } from "../services/file.service";
 
 
-const uploadFile = async (buffer: Buffer | undefined, originalname: string | undefined): Promise<uploadResponseDto> => {
-
-    const mineType = mime.lookup(path.extname(originalname!))
-
+const uploadFile = async (buffer: Buffer | undefined, originalname: string | undefined, minetype: string | undefined): Promise<uploadResponseDto> => {
     try {
         const res = await drive.files.create({
             requestBody: {
                 name: originalname, //file name
-                mimeType: mineType?.toString(),
+                mimeType: minetype,
                 parents: ['1S2WRQOMvr0WIGJ3shP0eyOXGvR0yvp6n']
             },
             media: {
-                mimeType: mineType?.toString(),
+                mimeType: minetype,
                 body: bufferToStream(buffer)
             },
         });
 
-        // generateUrl(r)
-        await generateUrl(res.data.id)
+
         return {
             code: 200,
-            message: 'Success'
+            message: 'Success',
+            data: res.data.id!
         }
     } catch (error) {
         console.log(error.message);
 
         return {
             code: 400,
-            message: error.message
+            message: error.message,
+            data: ''
         }
     }
 }
 
 
 const generateUrl = async (id: string | undefined | null) => {
+    const data = await findFileID(id);
+
     try {
-        const fileId = id!;
+        const fileId = data;
         //change file permisions
         await drive.permissions.create({
             fileId: fileId,
@@ -55,7 +54,7 @@ const generateUrl = async (id: string | undefined | null) => {
             fileId: fileId,
             fields: 'webViewLink, webContentLink',
         });
-        console.log(result.data);
+        console.log(result.data.webContentLink);
     } catch (error) {
         console.log(error.message);
     }
@@ -70,5 +69,6 @@ function bufferToStream(buffer: any) {
 }
 
 export {
-    uploadFile
+    uploadFile,
+    generateUrl
 }

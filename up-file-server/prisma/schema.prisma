@@ -13,7 +13,8 @@ datasource db {
 model FileList {
   id            Int      @id @default(autoincrement())
   filename      String   @db.VarChar(255)
+  file_id       String
   created_at    DateTime @default(now())
-  unique_url_id String
+  unique_url_id String   @unique @default(uuid())
   deleted_at    DateTime
 }
